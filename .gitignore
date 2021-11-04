@@ -1,0 +1,7 @@
+venv
+*.txt
+*.jpg
+main.py
+test.py
+_pycache_
+prices
