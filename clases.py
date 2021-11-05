@@ -77,16 +77,28 @@ class MainWindow(QMainWindow):
         self.buttons["buttonSDC"].append(self.buttonSDC)
         self.buttons["buttonMW"].append(self.buttonMW)
 
+        self.button_is_checked = True
+
         self.y = 160
         for button in self.buttons:
             self.buttons[button][-1].setGeometry(QtCore.QRect(
                 20, self.y, 0, 0))
             self.buttons[button][-1].adjustSize()
+            self.buttons[button][-1].setCheckable(True)
+            self.buttons[button][-1].released.connect(
+                self.the_button_was_released)
+            self.buttons[button][-1].setChecked(self.button_is_checked)
+
             self.y += 60
 
         # #Storing headers into dictionary
         self.widgets["leftHeader"].append(self.leftHeader)
         self.widgets["rightHeader"].append(self.rightHeader)
+
+    def the_button_was_released(self):
+        self.button_is_checked = self.buttons["buttonNFX"][-1].isChecked()
+
+        print(self.button_is_checked)
 
     def create_button(self, label):
         """ Function that handle creating buttons with styling """
