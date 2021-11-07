@@ -1,20 +1,16 @@
 import os, sys, ast
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QComboBox, QGridLayout, QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QApplication, QComboBox, QGridLayout, QMainWindow, QLabel, QPushButton, QVBoxLayout, QWidget, QListWidgetItem, QListWidget
 from PyQt5.QtGui import QCursor, QPixmap
 
 
 class MainWindow(QMainWindow):
+    """Class that displays Main Window of the App"""
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setWindowTitle("Komes Software")
         self.setGeometry(200, 200, 800, 600)
-
-        # self.setFixedWidth(1000)
         self.setStyleSheet("background: #fff;")
-
-        # self.layout1 = QVBoxLayout(self)  # Lewa kolumna
-        # self.layout2 = QVBoxLayout(self)  # Prawa kolumna
 
         self.initUI()
 
@@ -28,7 +24,6 @@ class MainWindow(QMainWindow):
         self.logo.setGeometry(QtCore.QRect(320, 0, 160, 41))
         self.logo.setStyleSheet("margin-top: 20px;")
         self.logo.adjustSize()
-        # self.layout1.addWidget(self.logo)
 
         # Headers
         self.leftHeader = QLabel(self)
@@ -53,79 +48,133 @@ class MainWindow(QMainWindow):
             "SDC Verifier",  #4
             "DEP MeshWorks",  #5
         ])
+        self.modules_names = []
+        self.modules_prices = []
+
         self.software_list.move(60, 140)
         self.software_list.setStyleSheet("font-size: 22px;")
         self.software_list.adjustSize()
 
-        self.module_header = QLabel(self)
-        self.module_header.setText("Wybierz Moduł")
-        self.module_header.setStyleSheet("font-size: 30px;" +
-                                         "color: #02119B;" + "margin: auto;")
-        self.module_header.setGeometry(QtCore.QRect(20, 160, 0, 0))
-        self.module_header.adjustSize()
+        self.version_header = QLabel(self)
+        self.version_header.setText("Wybierz Wersję")
+        self.version_header.setStyleSheet("font-size: 30px;" +
+                                          "color: #02119B;" + "margin: auto;")
+        self.version_header.setGeometry(QtCore.QRect(20, 160, 0, 0))
+        self.version_header.adjustSize()
 
-        self.module_list = QComboBox(self)
-        self.module_list.addItems([
+        self.version_list = QComboBox(self)
+        self.version_list.addItems([
             "Wybierz",
         ])
-        self.module_list.move(60, 260)
-        self.module_list.setStyleSheet("font-size: 22px;")
-        self.module_list.adjustSize()
+        self.version_list.move(60, 260)
+        self.version_list.setStyleSheet("font-size: 22px;")
+        self.version_list.adjustSize()
 
-        self.software_list.currentIndexChanged.connect(self.index_changed)
+        self.modules_list = QListWidget(self)
+        self.items_list = []
+
+        self.choosen_list = QListWidget(self)
+
+        self.choosen_list.setStyleSheet("font-size: 16px;" + "color: #000;" +
+                                        "margin: auto;")
+        self.modules_list.setStyleSheet("font-size: 16px;" + "color: #000;" +
+                                        "margin: auto;")
+        self.modules_list.adjustSize()
+        self.modules_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.choosen_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.choosen_list.adjustSize()
+
+        self.modules_list.move(20, 300)
+        self.choosen_list.move(270, 300)
+
+        self.add_button = QPushButton(self)
+        self.add_button.setText('>')
+        self.add_button.setStyleSheet("*{font-size: 22px;" + "width: 24px;" +
+                                      "padding: 4px;" + "margin: 5px;" +
+                                      "border: 0.5px solid black;}" +
+                                      "*:hover{background: '#BC006C'};")
+        self.add_button.adjustSize()
+        self.add_button.move(250, 370)
+
+        # self.software_list.currentIndexChanged.connect(self.index_changed)
         self.software_list.currentIndexChanged.connect(self.choose_soft)
-        # self.widget = QWidget(self)
-        # self.widget.setLayout(self.layout1)
 
-    def index_changed(self, i):  # i is an int
-        print(i)
+    # def index_changed(self, i):  # i is an int
+    #     print(i)
 
     def choose_soft(self, i):
         # Stored pricelists
         if i == 1:
-            self.choosen = 'NFX'
+            self.choosen_soft = 'NFX'
         elif i == 2:
-            self.choosen = 'MF'
+            self.choosen_soft = 'MF'
         elif i == 3:
-            self.choosen = 'CAE'
+            self.choosen_soft = 'CAE'
         elif i == 4:
-            self.choosen = 'SDC'
+            self.choosen_soft = 'SDC'
         elif i == 5:
-            self.choosen = 'MW'
+            self.choosen_soft = 'MW'
         else:
             return
+
+        self.choose_version(self.choosen_soft)
+
+    def choose_version(self, choosen_software):
+        """Function that handle giving the version choice depending on choosen software"""
 
         # pricelist relative path
         self.script_dir = os.path.dirname(
             __file__)  #<-- absolute dir the script is in
-        self.rel_path_V = "prices\\versions\\{}.txt".format(self.choosen)
+        self.rel_path_V = "prices\\versions\\{}.txt".format(choosen_software)
         self.abs_file_path_V = os.path.join(self.script_dir, self.rel_path_V)
-        self.rel_path_M = "prices\\modules\\{}.txt".format(self.choosen)
+        self.rel_path_M = "prices\\modules\\{}.txt".format(choosen_software)
         self.abs_file_path_M = os.path.join(self.script_dir, self.rel_path_M)
 
         with open(self.abs_file_path_V, 'r') as v_prices:
             self.contents = v_prices.read()
             self.V_pricing = ast.literal_eval(self.contents)
 
+        # Adding items (List of accesible versions) to QCombo box, depending on choosen software
+        self.version_list.addItems(
+            [key for key, value in self.V_pricing.items()])
+        self.version_list.adjustSize()
+
         with open(self.abs_file_path_M, 'r') as m_prices:
             self.contents = m_prices.read()
             self.M_pricing = ast.literal_eval(self.contents)
 
-        # print([key for key, value in self.V_pricing.items()])
+        for key, value in self.M_pricing.items():
+            # print(key)
+            self.modules_names.append(key)
+            self.modules_prices.append(value)
 
-        self.module_list.addItems(
-            [key for key, value in self.V_pricing.items()])
-        self.module_list.adjustSize()
+        self.modules_list.clear()
 
-        # self.module_list.move(60, 140)
-        # self.module_list.setStyleSheet("font-size: 22px;")
-        # self.module_list.adjustSize()
+        for item in self.modules_names:
+            listWidgetItem = QListWidgetItem(item)
+            self.items_list.append(listWidgetItem)
 
-        # self.module_list.currentIndexChanged.connect(self.index_changed)
+        for item in self.items_list:
+            self.modules_list.addItem(item)
 
-        # #Storing headers into dictionary
-        # self.widgets["leftHeader"].append(self.leftHeader)
-        # self.widgets["rightHeader"].append(self.rightHeader)
+        self.add_button.clicked.connect(self.text_changed)
+
+    def text_changed(self):
+        for item in self.items_list:
+            if item.isSelected():
+                print("{} zostal wybany".format(item.text()))
+                self.choosen_list.addItem(item)
+
+        self.choosen_modules = []
+
+        self.version_list.currentIndexChanged.connect(self.choose_modules)
+
+    def choose_modules(self, i):
+        """Fuction tah handle giving the module choice depending on choosen version"""
+
+        self.choosen_modules.append(self.modules_names[i + 1])
 
 
 def window():
