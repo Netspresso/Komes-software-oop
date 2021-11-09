@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self.add_button.setStyleSheet("*{font-size: 22px;" + "width: 24px;" +
                                       "padding: 4px;" + "margin: 5px;" +
                                       "border: 0.5px solid black;}" +
-                                      "*:hover{background: '#BC006C'};")
+                                      "*:hover{background: '#BC006C';}")
         self.add_button.adjustSize()
         self.add_button.move(250, 370)
 
@@ -119,9 +119,9 @@ class MainWindow(QMainWindow):
         else:
             return
 
-        self.choose_version(self.choosen_soft)
+        self.show_versions(self.choosen_soft)
 
-    def choose_version(self, choosen_software):
+    def show_versions(self, choosen_software):
         """Function that handle giving the version choice depending on choosen software"""
 
         # pricelist relative path
@@ -129,8 +129,6 @@ class MainWindow(QMainWindow):
             __file__)  #<-- absolute dir the script is in
         self.rel_path_V = "prices\\versions\\{}.txt".format(choosen_software)
         self.abs_file_path_V = os.path.join(self.script_dir, self.rel_path_V)
-        self.rel_path_M = "prices\\modules\\{}.txt".format(choosen_software)
-        self.abs_file_path_M = os.path.join(self.script_dir, self.rel_path_M)
 
         with open(self.abs_file_path_V, 'r') as v_prices:
             self.contents = v_prices.read()
@@ -141,16 +139,22 @@ class MainWindow(QMainWindow):
             [key for key, value in self.V_pricing.items()])
         self.version_list.adjustSize()
 
+        self.version_list.currentIndexChanged.connect(self.choose_version)
+
+    def choose_version(self, i):
+        """function that handle choosing one particular version of a software"""
+
+        self.rel_path_M = "prices\\modules\\{}.txt".format(self.choosen_soft)
+        self.abs_file_path_M = os.path.join(self.script_dir, self.rel_path_M)
+
         with open(self.abs_file_path_M, 'r') as m_prices:
             self.contents = m_prices.read()
             self.M_pricing = ast.literal_eval(self.contents)
 
-        for key, value in self.M_pricing.items():
-            # print(key)
-            self.modules_names.append(key)
-            self.modules_prices.append(value)
-
-        self.modules_list.clear()
+        if i != 0:
+            for key, value in self.M_pricing[i - 1].items():
+                self.modules_names.append(key)
+                self.modules_prices.append(value)
 
         for item in self.modules_names:
             listWidgetItem = QListWidgetItem(item)
@@ -159,7 +163,12 @@ class MainWindow(QMainWindow):
         for item in self.items_list:
             self.modules_list.addItem(item)
 
-        self.add_button.clicked.connect(self.text_changed)
+    #     self.show_modules()
+
+    # def show_modules(self):
+    #     """Function that handle displaying module list"""
+
+    #     self.add_button.clicked.connect(self.text_changed)
 
     def text_changed(self):
         for item in self.items_list:
@@ -169,12 +178,13 @@ class MainWindow(QMainWindow):
 
         self.choosen_modules = []
 
-        self.version_list.currentIndexChanged.connect(self.choose_modules)
+        # self.version_list.currentIndexChanged.connect(self.choose_modules)
 
     def choose_modules(self, i):
-        """Fuction tah handle giving the module choice depending on choosen version"""
+        """Fuction that handle giving the module choice depending on choosen version"""
 
         self.choosen_modules.append(self.modules_names[i + 1])
+        print(self.choosen_modules)
 
 
 def window():
